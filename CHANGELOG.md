@@ -5,7 +5,7 @@ yayımlandı; "yayımlanmadı" = depoda hazır, `npm publish` bekliyor.
 Yayımlanmış bir sürümün girdisi bir daha DEĞİŞTİRİLMEZ; yayından sonra
 yapılan metadata düzeltmesi yeni sürüm numarası alır (0.3.1 dersi, aşağıda).
 
-## 0.3.3 — yayımlanmadı
+## 0.3.3 — 2026-09-10
 
 - **Lisans metni artık pakette (LBL-DOC-012).** `license: MIT` ilan
   ediliyordu ama tarball'da lisans metni YOKTU (`npm pack` ile ölçüldü:
