@@ -1,0 +1,24 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.labelixa/zpl",
+  "title": "Labelixa",
+  "description": "Render, validate and convert Zebra ZPL label code from AI assistants: PNG preview, lint, barcodes.",
+  "version": "0.3.3",
+  "websiteUrl": "https://labelixa.com/mcp",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.labelixa.com/mcp"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "labelixa-mcp",
+      "version": "0.3.3",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

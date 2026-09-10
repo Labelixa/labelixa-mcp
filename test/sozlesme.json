@@ -1,0 +1,166 @@
+{
+  "barcode_generate": {
+    "alanlar": {
+      "data": {
+        "tip": "string"
+      },
+      "format": {
+        "tip": "string",
+        "enum": [
+          "png",
+          "svg"
+        ]
+      },
+      "type": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "data",
+      "type"
+    ]
+  },
+  "convert_zpl_dpi": {
+    "alanlar": {
+      "source": {
+        "tip": "integer"
+      },
+      "target": {
+        "tip": "integer"
+      },
+      "zpl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "zpl"
+    ]
+  },
+  "cpcl_validate": {
+    "alanlar": {
+      "cpcl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "cpcl"
+    ]
+  },
+  "epl_validate": {
+    "alanlar": {
+      "epl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "epl"
+    ]
+  },
+  "explain_zpl": {
+    "alanlar": {
+      "dpmm": {
+        "tip": "integer"
+      },
+      "height_in": {
+        "tip": "number"
+      },
+      "model": {
+        "tip": "string"
+      },
+      "width_in": {
+        "tip": "number"
+      },
+      "zpl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "zpl"
+    ]
+  },
+  "language_detect": {
+    "alanlar": {
+      "code": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "code"
+    ]
+  },
+  "tspl_validate": {
+    "alanlar": {
+      "tspl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "tspl"
+    ]
+  },
+  "zpl_command_help": {
+    "alanlar": {
+      "command": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "command"
+    ]
+  },
+  "zpl_compatibility": {
+    "alanlar": {
+      "model": {
+        "tip": "string"
+      },
+      "zpl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "model",
+      "zpl"
+    ]
+  },
+  "zpl_preview": {
+    "alanlar": {
+      "dpmm": {
+        "tip": "integer"
+      },
+      "height_in": {
+        "tip": "number"
+      },
+      "index": {
+        "tip": "integer"
+      },
+      "width_in": {
+        "tip": "number"
+      },
+      "zpl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "zpl"
+    ]
+  },
+  "zpl_validate": {
+    "alanlar": {
+      "dpmm": {
+        "tip": "integer"
+      },
+      "height_in": {
+        "tip": "number"
+      },
+      "width_in": {
+        "tip": "number"
+      },
+      "zpl": {
+        "tip": "string"
+      }
+    },
+    "zorunlu": [
+      "zpl"
+    ]
+  }
+}

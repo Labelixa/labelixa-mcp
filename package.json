@@ -1,0 +1,46 @@
+{
+  "name": "labelixa-mcp",
+  "version": "0.3.3",
+  "mcpName": "com.labelixa/zpl",
+  "description": "Core Labelixa tools as a local MCP server: ZPL preview/validate/explain, EPL/TSPL/CPCL linting, barcodes, DPI conversion. Full tool set is on the hosted remote server — labelixa.com/mcp.",
+  "type": "module",
+  "bin": {
+    "labelixa-mcp": "server.mjs"
+  },
+  "files": [
+    "server.mjs",
+    "araclar.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/araclar.test.mjs test/sozlesme.test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "keywords": [
+    "zpl",
+    "zebra",
+    "label",
+    "barcode",
+    "printing",
+    "mcp",
+    "model-context-protocol",
+    "thermal-printer"
+  ],
+  "license": "MIT",
+  "homepage": "https://labelixa.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Labelixa/labelixa-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Labelixa/labelixa-mcp/issues",
+    "email": "support@labelixa.com"
+  }
+}
