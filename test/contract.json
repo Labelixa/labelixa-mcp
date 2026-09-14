@@ -1,165 +1,165 @@
 {
   "barcode_generate": {
-    "alanlar": {
+    "fields": {
       "data": {
-        "tip": "string"
+        "type": "string"
       },
       "format": {
-        "tip": "string",
+        "type": "string",
         "enum": [
           "png",
           "svg"
         ]
       },
       "type": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "data",
       "type"
     ]
   },
   "convert_zpl_dpi": {
-    "alanlar": {
+    "fields": {
       "source": {
-        "tip": "integer"
+        "type": "integer"
       },
       "target": {
-        "tip": "integer"
+        "type": "integer"
       },
       "zpl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "zpl"
     ]
   },
   "cpcl_validate": {
-    "alanlar": {
+    "fields": {
       "cpcl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "cpcl"
     ]
   },
   "epl_validate": {
-    "alanlar": {
+    "fields": {
       "epl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "epl"
     ]
   },
   "explain_zpl": {
-    "alanlar": {
+    "fields": {
       "dpmm": {
-        "tip": "integer"
+        "type": "integer"
       },
       "height_in": {
-        "tip": "number"
+        "type": "number"
       },
       "model": {
-        "tip": "string"
+        "type": "string"
       },
       "width_in": {
-        "tip": "number"
+        "type": "number"
       },
       "zpl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "zpl"
     ]
   },
   "language_detect": {
-    "alanlar": {
+    "fields": {
       "code": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "code"
     ]
   },
   "tspl_validate": {
-    "alanlar": {
+    "fields": {
       "tspl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "tspl"
     ]
   },
   "zpl_command_help": {
-    "alanlar": {
+    "fields": {
       "command": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "command"
     ]
   },
   "zpl_compatibility": {
-    "alanlar": {
+    "fields": {
       "model": {
-        "tip": "string"
+        "type": "string"
       },
       "zpl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "model",
       "zpl"
     ]
   },
   "zpl_preview": {
-    "alanlar": {
+    "fields": {
       "dpmm": {
-        "tip": "integer"
+        "type": "integer"
       },
       "height_in": {
-        "tip": "number"
+        "type": "number"
       },
       "index": {
-        "tip": "integer"
+        "type": "integer"
       },
       "width_in": {
-        "tip": "number"
+        "type": "number"
       },
       "zpl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "zpl"
     ]
   },
   "zpl_validate": {
-    "alanlar": {
+    "fields": {
       "dpmm": {
-        "tip": "integer"
+        "type": "integer"
       },
       "height_in": {
-        "tip": "number"
+        "type": "number"
       },
       "width_in": {
-        "tip": "number"
+        "type": "number"
       },
       "zpl": {
-        "tip": "string"
+        "type": "string"
       }
     },
-    "zorunlu": [
+    "required": [
       "zpl"
     ]
   }

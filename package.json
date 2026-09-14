@@ -1,6 +1,6 @@
 {
   "name": "labelixa-mcp",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "mcpName": "com.labelixa/zpl",
   "description": "Core Labelixa tools as a local MCP server: ZPL preview/validate/explain, EPL/TSPL/CPCL linting, barcodes, DPI conversion. Full tool set is on the hosted remote server — labelixa.com/mcp.",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "files": [
     "server.mjs",
-    "araclar.mjs",
+    "tools.mjs",
     "README.md",
     "LICENSE"
   ],
@@ -17,7 +17,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test test/araclar.test.mjs test/sozlesme.test.mjs"
+    "test": "node --test test/tools.test.mjs test/contract.test.mjs",
+    "check-publish": "node scripts/check-publish.mjs",
+    "prepublishOnly": "node scripts/check-publish.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

@@ -1,32 +1,32 @@
 #!/usr/bin/env node
 /**
- * Labelixa MCP sunucusu — stdio (LBL-ECO-014).
+ * Labelixa MCP server — stdio.
  *
- * Kablolama BURADA, iş mantığı `araclar.mjs`te: araçlar MCP SDK'sız,
- * sahte fetch ile test edilir; bu dosya yalnız şema + kayıt + taşımadır.
+ * The wiring lives HERE, the tool logic in `tools.mjs`: the tools are
+ * tested without the MCP SDK using a fake fetch; this file only holds
+ * schemas, registration and transport.
  *
- * Yapılandırma: `LABELIXA_API_KEY` (isteğe bağlı — anonim kota çalışır),
- * `LABELIXA_BASE_URL` (varsayılan https://api.labelixa.com).
+ * Configuration: `LABELIXA_API_KEY` (optional — the anonymous quota works),
+ * `LABELIXA_BASE_URL` (default https://api.labelixa.com).
  */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { SURUM, yeniBaglam, zplOnizle, zplDogrula, barkodUret, dilTespit,
-         eplDogrula, tsplDogrula, cpclDogrula, uyumlulukDenetle,
-         dpiDonustur, zplAcikla, komutYardimi } from "./araclar.mjs";
+import { VERSION, createContext, zplPreview, zplValidate, barcodeGenerate,
+         languageDetect, eplValidate, tsplValidate, cpclValidate,
+         checkCompatibility, convertDpi, explainZpl, commandHelp } from "./tools.mjs";
 
-const baglam = yeniBaglam({
+const context = createContext({
   apiKey: process.env.LABELIXA_API_KEY,
   baseUrl: process.env.LABELIXA_BASE_URL || undefined,
 });
 
-// Sürüm TEK kaynaktan (package.json → araclar.SURUM): 0.3.1'de üç dosya
-// üç ayrı sayı taşıyordu (GEO denetimi 2026-09-06). Elle yazılan sürüm
-// bir daha yazılmaz.
-const server = new McpServer({ name: "labelixa", version: SURUM });
+// The version comes from a single source (package.json -> tools.VERSION);
+// it is never written by hand here.
+const server = new McpServer({ name: "labelixa", version: VERSION });
 
-// Ortak ölçü şeması — SDK'daki adlarla birebir (width_in/height_in inç).
-const olcu = {
+// Shared size schema — same names as the SDK (width_in/height_in in inches).
+const sizeSchema = {
   dpmm: z.number().int().min(6).max(24).default(8)
     .describe("Printer density in dots per mm (6, 8, 12 or 24)"),
   width_in: z.number().positive().default(4)
@@ -42,11 +42,11 @@ server.tool(
     "specific physical printer will output the label.",
   {
     zpl: z.string().min(1).describe("Raw ZPL code (^XA ... ^XZ)"),
-    ...olcu,
+    ...sizeSchema,
     index: z.number().int().min(0).default(0)
       .describe("Which label to render when the stream contains several"),
   },
-  (args) => zplOnizle(baglam, args),
+  (args) => zplPreview(context, args),
 );
 
 server.tool(
@@ -54,8 +54,8 @@ server.tool(
   "Lint/validate ZPL and return the structured diagnostics report " +
     "(unknown commands, parameter range errors, layout overflow, etc.) " +
     "as JSON. Pass the real label size — checks depend on it.",
-  { zpl: z.string().min(1).describe("Raw ZPL code"), ...olcu },
-  (args) => zplDogrula(baglam, args),
+  { zpl: z.string().min(1).describe("Raw ZPL code"), ...sizeSchema },
+  (args) => zplValidate(context, args),
 );
 
 server.tool(
@@ -68,7 +68,7 @@ server.tool(
     data: z.string().min(1).describe("Data to encode"),
     format: z.enum(["svg", "png"]).default("svg"),
   },
-  (args) => barkodUret(baglam, args),
+  (args) => barcodeGenerate(context, args),
 );
 
 server.tool(
@@ -77,7 +77,7 @@ server.tool(
     "TSPL or CPCL). Heuristic: returns the language plus a confidence " +
     "TIER (high/medium/low) and signal codes — not a probability.",
   { code: z.string().min(1).describe("Raw label code to classify") },
-  (args) => dilTespit(baglam, args),
+  (args) => languageDetect(context, args),
 );
 
 server.tool(
@@ -85,7 +85,7 @@ server.tool(
   "Lint/validate EPL/EPL2 label code and return the structured " +
     "diagnostics report (findings with positions and severity) as JSON.",
   { epl: z.string().min(1).describe("Raw EPL/EPL2 code") },
-  (args) => eplDogrula(baglam, args),
+  (args) => eplValidate(context, args),
 );
 
 server.tool(
@@ -93,7 +93,7 @@ server.tool(
   "Lint/validate TSPL/TSPL2 label code and return the structured " +
     "diagnostics report (findings with positions and severity) as JSON.",
   { tspl: z.string().min(1).describe("Raw TSPL/TSPL2 code") },
-  (args) => tsplDogrula(baglam, args),
+  (args) => tsplValidate(context, args),
 );
 
 server.tool(
@@ -101,7 +101,7 @@ server.tool(
   "Lint/validate CPCL label code and return the structured diagnostics " +
     "report (findings with positions and severity) as JSON.",
   { cpcl: z.string().min(1).describe("Raw CPCL code") },
-  (args) => cpclDogrula(baglam, args),
+  (args) => cpclValidate(context, args),
 );
 
 server.tool(
@@ -116,7 +116,7 @@ server.tool(
     model: z.string().min(1)
       .describe("Printer model as manufacturer/model, e.g. zebra/zd421"),
   },
-  (args) => uyumlulukDenetle(baglam, args),
+  (args) => checkCompatibility(context, args),
 );
 
 server.tool(
@@ -127,7 +127,7 @@ server.tool(
     "not rendered.",
   { command: z.string().min(1)
       .describe("Command code with or without prefix, e.g. ^PO, BC, ~DG") },
-  (args) => komutYardimi(baglam, args),
+  (args) => commandHelp(context, args),
 );
 
 server.tool(
@@ -142,7 +142,7 @@ server.tool(
     target: z.number().int().default(300)
       .describe("Target resolution in dpi (152, 203, 300 or 600)"),
   },
-  (args) => dpiDonustur(baglam, args),
+  (args) => convertDpi(context, args),
 );
 
 server.tool(
@@ -153,13 +153,13 @@ server.tool(
     "real label size — findings depend on it.",
   {
     zpl: z.string().min(1).describe("Raw ZPL code"),
-    ...olcu,
+    ...sizeSchema,
     model: z.string().default("")
       .describe("Optional printer model as manufacturer/model " +
                 "(e.g. zebra/zd421) to add " +
                 "a model-compatibility section"),
   },
-  (args) => zplAcikla(baglam, args),
+  (args) => explainZpl(context, args),
 );
 
 const transport = new StdioServerTransport();

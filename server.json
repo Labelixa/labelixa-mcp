@@ -3,7 +3,7 @@
   "name": "com.labelixa/zpl",
   "title": "Labelixa",
   "description": "Render, validate and convert Zebra ZPL label code from AI assistants: PNG preview, lint, barcodes.",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "websiteUrl": "https://labelixa.com/mcp",
   "remotes": [
     {
@@ -15,7 +15,7 @@
     {
       "registryType": "npm",
       "identifier": "labelixa-mcp",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "transport": {
         "type": "stdio"
       }
