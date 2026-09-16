@@ -1,15 +1,85 @@
 # labelixa-mcp
 
-MCP (Model Context Protocol) server for the [Labelixa](https://labelixa.com)
-API. Lets AI assistants that speak MCP (Claude Desktop, Claude Code and
-other MCP clients) work with Zebra ZPL label code directly.
+[Labelixa](https://labelixa.com) is an MCP (Model Context Protocol) server
+and API platform for thermal label development. It gives AI assistants and
+developer tools the ability to render, validate, debug, inspect and
+convert thermal printer labels — **ZPL, EPL, TSPL and CPCL** — through MCP.
 
-This npm package ships the **core tool subset** below. The hosted remote
-MCP server carries the **full tool set** — everything here plus label
-templates, bulk generation, image-to-ZPL conversion, barcode reading
-from photos and EPL/TSPL/CPCL previews. See
-[labelixa.com/mcp](https://labelixa.com/mcp) for the remote endpoint and
-the live tool list.
+There are two ways to connect:
+
+| | Remote server (recommended) | This npm package |
+|---|---|---|
+| Endpoint | `https://api.labelixa.com/mcp` | local process over stdio |
+| Tool set | full set: rendering, validation, debugging, conversion, barcode analysis, printer compatibility, templates, bulk jobs | core subset (table below); each tool calls the Labelixa REST API |
+| Install | nothing to install | `npx -y labelixa-mcp` or `npm install -g labelixa-mcp` |
+| Authentication | optional `lbx_` API key | optional `lbx_` API key |
+
+The live tool list of the remote server is at
+[labelixa.com/mcp](https://labelixa.com/mcp).
+
+## Remote server (no install)
+
+Transport: Streamable HTTP, stateless JSON-RPC over POST. Anonymous use
+is free and rate-limited per IP; an API key uses the account's own quota.
+Keys: [labelixa.com](https://labelixa.com).
+
+Claude Code:
+
+```sh
+claude mcp add --transport http labelixa https://api.labelixa.com/mcp
+```
+
+With an API key:
+
+```sh
+claude mcp add --transport http labelixa https://api.labelixa.com/mcp \
+  --header "Authorization: Bearer lbx_..."
+```
+
+Generic MCP client configuration (Claude Desktop, Cursor and other
+clients that accept a `url` entry):
+
+```json
+{
+  "mcpServers": {
+    "labelixa": {
+      "url": "https://api.labelixa.com/mcp",
+      "headers": {"Authorization": "Bearer lbx_..."}
+    }
+  }
+}
+```
+
+Drop the `headers` block for anonymous use.
+
+## Local server (this package)
+
+```sh
+npm install -g labelixa-mcp
+```
+
+Or skip installing and run it with `npx` straight from your MCP client
+config:
+
+```json
+{
+  "mcpServers": {
+    "labelixa": {
+      "command": "npx",
+      "args": ["-y", "labelixa-mcp"],
+      "env": {"LABELIXA_API_KEY": "lbx_..."}
+    }
+  }
+}
+```
+
+Environment variables:
+
+- `LABELIXA_API_KEY` — optional `lbx_` API key. Without it the anonymous
+  quota applies.
+- `LABELIXA_BASE_URL` — optional; defaults to `https://api.labelixa.com`.
+
+### Tools in this package
 
 | Tool | What it does |
 |---|---|
@@ -25,46 +95,19 @@ the live tool list.
 | `convert_zpl_dpi` | Rescales ZPL coordinates between printer resolutions (203/300/600 dpi). Embedded `^GF`/`~DG` bitmaps are NOT rescaled — a warnings block precedes the output when present. |
 | `explain_zpl` | Full sectioned health report (syntax, size/DPI, orientation, barcodes, fonts, memory) with an honest score — sections it cannot assess say "not assessed" instead of counting. |
 
-## Installation
+EPL, TSPL and CPCL previews, label templates, bulk generation,
+image-to-ZPL conversion and barcode reading from photos are on the remote
+server only.
 
-```sh
-npm install -g labelixa-mcp
-```
+## Directory listings
 
-Or skip installing and run it with `npx` straight from your MCP client
-config (below).
-
-Also available as a remote server on
-[Smithery](https://smithery.ai/servers/labelixa/zpl) (`labelixa/zpl`) —
-no local install at all; the gateway connects to our hosted MCP
-endpoint. Listed in the official
-[MCP Registry](https://registry.modelcontextprotocol.io) as
-`com.labelixa/zpl` (remote server + this npm package).
+- Official [MCP Registry](https://registry.modelcontextprotocol.io):
+  `com.labelixa/zpl` (remote server + this npm package).
+- [Smithery](https://smithery.ai/servers/labelixa/zpl): `labelixa/zpl`.
+  Smithery routes calls through its own gateway; the canonical endpoint
+  is `https://api.labelixa.com/mcp`.
 
 [![smithery badge](https://smithery.ai/badge/labelixa/zpl)](https://smithery.ai/servers/labelixa/zpl)
-
-## Configuration
-
-Environment variables:
-
-- `LABELIXA_API_KEY` — optional `lbx_` API key. Without it the anonymous
-  quota applies. Get a key at
-  [labelixa.com](https://labelixa.com).
-- `LABELIXA_BASE_URL` — optional; defaults to `https://api.labelixa.com`.
-
-Example MCP client entry:
-
-```json
-{
-  "mcpServers": {
-    "labelixa": {
-      "command": "npx",
-      "args": ["-y", "labelixa-mcp"],
-      "env": {"LABELIXA_API_KEY": "lbx_..."}
-    }
-  }
-}
-```
 
 ## Honesty notes
 
@@ -73,4 +116,5 @@ Example MCP client entry:
 - `zpl_preview` is a render, not a print: physical output depends on the
   printer, media and darkness settings.
 
-License: MIT.
+Source of this package: [github.com/Labelixa/labelixa-mcp](https://github.com/Labelixa/labelixa-mcp).
+Docs: [labelixa.com/docs/api](https://labelixa.com/docs/api). License: MIT.
