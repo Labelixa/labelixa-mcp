@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      # `npm ci` (install DEGIL): kilit dosyasina birebir uyar, yani
-      # olculen agac yayinlanacak agactir.
+      # `npm ci` (not `install`): installs exactly what the lock file
+      # pins, so the tree that is measured is the tree that ships.
       - run: npm ci
       - run: npm test

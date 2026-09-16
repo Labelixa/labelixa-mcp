@@ -4,6 +4,21 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.3.5] - 2026-09-16
+
+### Changed
+- Package description and keywords describe the product by capability
+  (render, validate, debug, convert) and name all four label languages
+  (ZPL, EPL, TSPL, CPCL); the hosted endpoint `https://api.labelixa.com/mcp`
+  is stated explicitly.
+- README leads with the remote server (no install), then this package;
+  Claude Code and generic `url` client configuration added.
+- Registry manifest (`server.json`): capability-based description,
+  `repository` set to the public source mirror
+  (`github.com/Labelixa/labelixa-mcp`), publisher-provided metadata block
+  with the canonical identity (endpoint, website, languages, positioning).
+- No tool or behaviour change.
+
 ## [0.3.4] - 2026-09-13
 
 ### Changed

@@ -2,9 +2,14 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.labelixa/zpl",
   "title": "Labelixa",
-  "description": "Render, validate and convert Zebra ZPL label code from AI assistants: PNG preview, lint, barcodes.",
-  "version": "0.3.4",
+  "description": "Thermal label MCP server: render, validate, debug and convert ZPL, EPL, TSPL and CPCL labels.",
+  "version": "0.3.5",
   "websiteUrl": "https://labelixa.com/mcp",
+  "repository": {
+    "url": "https://github.com/Labelixa/labelixa-mcp",
+    "source": "github",
+    "id": "1363678422"
+  },
   "remotes": [
     {
       "type": "streamable-http",
@@ -15,10 +20,36 @@
     {
       "registryType": "npm",
       "identifier": "labelixa-mcp",
-      "version": "0.3.4",
+      "version": "0.3.5",
       "transport": {
         "type": "stdio"
       }
     }
-  ]
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "canonical": {
+        "product": "Labelixa",
+        "website": "https://labelixa.com",
+        "mcpPage": "https://labelixa.com/mcp",
+        "remoteEndpoint": "https://api.labelixa.com/mcp",
+        "transport": "Streamable HTTP, stateless JSON-RPC over POST",
+        "authentication": "Optional. Authorization: Bearer <lbx_ API key> (or X-API-Key). Anonymous use is rate-limited per IP.",
+        "npmPackage": "labelixa-mcp",
+        "sourceMirror": "https://github.com/Labelixa/labelixa-mcp",
+        "docs": "https://labelixa.com/docs/api",
+        "examples": "https://github.com/Labelixa/zpl-examples"
+      },
+      "positioning": "Labelixa is an MCP server and API platform for thermal label development: rendering, validating, debugging and converting ZPL, EPL, TSPL and CPCL labels.",
+      "shortDescription": "Thermal label MCP server for rendering, validating, debugging and converting ZPL, EPL, TSPL and CPCL labels.",
+      "developerDescription": "Give AI assistants and developer tools the ability to render, validate, debug, inspect and convert thermal printer labels through MCP.",
+      "capabilities": "Tools for rendering, validation, debugging, conversion, barcode analysis and printer compatibility.",
+      "languages": ["ZPL", "EPL", "TSPL", "CPCL"],
+      "keywords": ["mcp", "mcp-server", "model-context-protocol", "zpl", "epl", "tspl", "cpcl", "zebra", "thermal-printer", "label-printing", "barcode"],
+      "artifacts": {
+        "remote": "Hosted server at https://api.labelixa.com/mcp: full tool set, versioned with the Labelixa API.",
+        "local": "npm package labelixa-mcp: local stdio server with a core tool subset that calls the Labelixa REST API."
+      }
+    }
+  }
 }
