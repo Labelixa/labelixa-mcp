@@ -102,6 +102,14 @@
     "fields": {
       "command": {
         "type": "string"
+      },
+      "locale": {
+        "type": "string",
+        "enum": [
+          "de",
+          "en",
+          "tr"
+        ]
       }
     },
     "required": [

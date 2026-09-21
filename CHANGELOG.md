@@ -4,6 +4,24 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-09-16
+
+### Added
+- `zpl_command_help` accepts an optional `locale` (`en` default, `tr`,
+  `de`), forwarded to the REST catalog as the documented `?lang=` query
+  parameter. Only the command name and the descriptions change; the
+  command code, syntax string, example and parameter names are protocol
+  and are identical in every language — translating them would produce
+  ZPL that does not run. An unsupported value is rejected by the server
+  with 400 instead of falling back silently, so a caller that asks for a
+  language it cannot get hears about it.
+
+### Changed
+- `zpl_command_help` now answers in English by default. It previously
+  returned the catalog's Turkish source text (`^XZ` came back as
+  "Format Sonu") while the tool description, field names and error
+  messages were already English.
+
 ## [0.3.5] - 2026-09-16
 
 ### Changed

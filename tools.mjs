@@ -164,9 +164,18 @@ export const explainZpl = (ctx, { zpl, dpmm = 8, width_in = 4,
 /** Catalog entry of a single ZPL command (name, format, parameters and a
  * flag telling whether the preview engine renders it). The API has no
  * single-command endpoint; the documented /v1/commands list is fetched and
- * filtered client-side — presentation, not magic. */
-export async function commandHelp(ctx, { command }) {
-  const res = await ctx.fetch(ctx.baseUrl + "/v1/commands",
+ * filtered client-side — presentation, not magic.
+ *
+ * `locale` maps to the documented `?lang=` query parameter and defaults to
+ * the server default (English). It reaches the human-readable fields only:
+ * the command code, syntax string, example and parameter NAMES are
+ * protocol, and translating them would produce ZPL that does not run. An
+ * unsupported value is rejected by the server with 400 rather than falling
+ * back silently — a caller asking for a language it does not get should
+ * hear about it. */
+export async function commandHelp(ctx, { command, locale }) {
+  const q = locale ? "?lang=" + encodeURIComponent(locale) : "";
+  const res = await ctx.fetch(ctx.baseUrl + "/v1/commands" + q,
                               { method: "GET", headers: ctx.headers });
   if (res.status !== 200) return errorResult(await errorMessage(res));
   // `komutlar` / `kod` are the field names of the API response

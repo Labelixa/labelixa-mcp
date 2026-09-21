@@ -91,7 +91,7 @@ Environment variables:
 | `tspl_validate` | Lints TSPL/TSPL2 code; positioned findings with severity, as JSON. |
 | `cpcl_validate` | Lints CPCL code; positioned findings with severity, as JSON. |
 | `zpl_compatibility` | Compatibility RISK analysis of ZPL against a printer model. Not an emulator — reports language posture with evidence level; never says "it works". |
-| `zpl_command_help` | Looks up one ZPL command in the maintained catalog: name, syntax, parameters and whether the preview engine actually renders it — printer-side commands are marked as not rendered. |
+| `zpl_command_help` | Looks up one ZPL command in the maintained catalog: name, syntax, parameters and whether the preview engine actually renders it — printer-side commands are marked as not rendered. Optional `locale` (`en` default, `tr`, `de`) translates the name and descriptions only; command codes, syntax strings, examples and parameter names are protocol and never change. |
 | `convert_zpl_dpi` | Rescales ZPL coordinates between printer resolutions (203/300/600 dpi). Embedded `^GF`/`~DG` bitmaps are NOT rescaled — a warnings block precedes the output when present. |
 | `explain_zpl` | Full sectioned health report (syntax, size/DPI, orientation, barcodes, fonts, memory) with an honest score — sections it cannot assess say "not assessed" instead of counting. |
 
