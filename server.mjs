@@ -125,8 +125,14 @@ server.tool(
     "parameters (types, ranges, defaults) and whether the preview engine " +
     "actually renders it — printer-side commands are honestly marked as " +
     "not rendered.",
-  { command: z.string().min(1)
-      .describe("Command code with or without prefix, e.g. ^PO, BC, ~DG") },
+  {
+    command: z.string().min(1)
+      .describe("Command code with or without prefix, e.g. ^PO, BC, ~DG"),
+    locale: z.enum(["en", "tr", "de"]).optional()
+      .describe("Language for the name and descriptions (default English). " +
+        "Command codes, syntax strings, examples and parameter names are " +
+        "protocol and never change."),
+  },
   (args) => commandHelp(context, args),
 );
 

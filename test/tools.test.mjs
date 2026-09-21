@@ -203,3 +203,20 @@ test("zpl_command_help returns an error for an unknown command, never invents an
     assert.equal(r.isError, true);
     assert.match(r.content[0].text, /Unknown command/);
   });
+
+// The `locale` parameter maps to the documented `?lang=` query parameter.
+// It is measured on the URL, not on the response: the server decides the
+// language, and a client that quietly dropped the parameter would return
+// English while the assistant believed it had asked for German.
+test("zpl_command_help passes locale through as ?lang=, and omits it when unset",
+  async () => {
+    const catalog = JSON.stringify({ komutlar: [
+      { kod: "FO", ad: "Field Origin", destekleniyor: true },
+    ] });
+    const calls = [];
+    const ctx = createContext({ fetch: fakeFetch(calls, { text: catalog }) });
+    await commandHelp(ctx, { command: "FO" });
+    assert.match(calls[0].url, /\/v1\/commands$/);
+    await commandHelp(ctx, { command: "FO", locale: "de" });
+    assert.match(calls[1].url, /\/v1\/commands\?lang=de$/);
+  });
