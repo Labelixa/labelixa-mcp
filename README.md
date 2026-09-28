@@ -79,6 +79,11 @@ Environment variables:
   quota applies.
 - `LABELIXA_BASE_URL` — optional; defaults to `https://api.labelixa.com`.
 
+Requests never follow redirects, so a server cannot forward your key to
+another host. Numeric inputs are checked before a request is made: `dpmm`
+is 6, 8, 12 or 24, label sides are finite, above 0 and at most 15 inches,
+and DPI values are 152, 203, 300 or 600.
+
 ### Tools in this package
 
 | Tool | What it does |

@@ -220,3 +220,54 @@ test("zpl_command_help passes locale through as ?lang=, and omits it when unset"
     await commandHelp(ctx, { command: "FO", locale: "de" });
     assert.match(calls[1].url, /\/v1\/commands\?lang=de$/);
   });
+
+// Numbers reach the request path and query string. JSON has no Infinity or
+// NaN literal, but `1e999` parses to Infinity and a client may send any
+// number; nothing non-finite or out of range may leave the process.
+test("non-finite and out-of-range numbers are rejected before any request",
+  async () => {
+    const calls = [];
+    const ctx = createContext({ fetch: fakeFetch(calls, { text: "{}" }) });
+    const cases = [
+      [zplPreview, { zpl: "^XA^XZ", width_in: Infinity }],
+      [zplPreview, { zpl: "^XA^XZ", height_in: NaN }],
+      [zplPreview, { zpl: "^XA^XZ", width_in: -1 }],
+      [zplPreview, { zpl: "^XA^XZ", width_in: 16 }],
+      [zplPreview, { zpl: "^XA^XZ", dpmm: 7 }],
+      [zplPreview, { zpl: "^XA^XZ", dpmm: Infinity }],
+      [zplPreview, { zpl: "^XA^XZ", index: 1.5 }],
+      [zplPreview, { zpl: "^XA^XZ", index: -1 }],
+      [zplPreview, { zpl: "^XA^XZ", index: Infinity }],
+      [zplValidate, { zpl: "^XA^XZ", height_in: Infinity }],
+      [zplValidate, { zpl: "^XA^XZ", width_in: "4" }],
+      [explainZpl, { zpl: "^XA^XZ", width_in: NaN }],
+      [convertDpi, { zpl: "^XA^XZ", source: Infinity }],
+      [convertDpi, { zpl: "^XA^XZ", target: 301 }],
+      [convertDpi, { zpl: "^XA^XZ", target: NaN }],
+    ];
+    for (const [tool, args] of cases) {
+      const r = await tool(ctx, args);
+      assert.equal(r.isError, true, `${tool.name} accepted ${JSON.stringify(args)}`);
+      assert.match(r.content[0].text, /^Invalid /);
+    }
+    assert.equal(calls.length, 0, "a request went out with an invalid number");
+    // Valid edges still pass.
+    await zplPreview(ctx, { zpl: "^XA^XZ", dpmm: 24, width_in: 15, height_in: 0.5 });
+    await convertDpi(ctx, { zpl: "^XA^XZ", source: 152, target: 600 });
+    assert.equal(calls.length, 2);
+  });
+
+// fetch drops only `Authorization` on a cross-host redirect; X-API-Key
+// would be carried along, so no request may follow a redirect.
+test("requests never follow redirects", async () => {
+  const calls = [];
+  const ctx = createContext({ apiKey: "lbx_test", fetch: fakeFetch(calls, { status: 307 }) });
+  const r = await zplValidate(ctx, { zpl: "^XA^XZ" });
+  assert.equal(calls[0].options.redirect, "manual");
+  assert.equal(r.isError, true);
+  assert.match(r.content[0].text, /HTTP 307/);
+  await commandHelp(ctx, { command: "FO" });
+  await barcodeGenerate(ctx, { type: "code128", data: "1" });
+  await languageDetect(ctx, { code: "^XA^XZ" });
+  for (const c of calls) assert.equal(c.options.redirect, "manual", c.url);
+});

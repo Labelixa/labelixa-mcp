@@ -14,7 +14,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { VERSION, createContext, zplPreview, zplValidate, barcodeGenerate,
          languageDetect, eplValidate, tsplValidate, cpclValidate,
-         checkCompatibility, convertDpi, explainZpl, commandHelp } from "./tools.mjs";
+         checkCompatibility, convertDpi, explainZpl, commandHelp,
+         DPMM_VALUES, DPI_VALUES, MAX_INCHES, MAX_INDEX } from "./tools.mjs";
 
 const context = createContext({
   apiKey: process.env.LABELIXA_API_KEY,
@@ -26,14 +27,21 @@ const context = createContext({
 const server = new McpServer({ name: "labelixa", version: VERSION });
 
 // Shared size schema — same names as the SDK (width_in/height_in in inches).
+// Every number is finite and bounded (`1e999` in JSON parses to Infinity);
+// tools.mjs checks the same limits again before any request.
 const sizeSchema = {
-  dpmm: z.number().int().min(6).max(24).default(8)
+  dpmm: z.number().int().refine((v) => DPMM_VALUES.includes(v),
+                                "dpmm must be 6, 8, 12 or 24").default(8)
     .describe("Printer density in dots per mm (6, 8, 12 or 24)"),
-  width_in: z.number().positive().default(4)
-    .describe("Label width in inches"),
-  height_in: z.number().positive().default(6)
-    .describe("Label height in inches"),
+  width_in: z.number().finite().positive().max(MAX_INCHES).default(4)
+    .describe(`Label width in inches (at most ${MAX_INCHES})`),
+  height_in: z.number().finite().positive().max(MAX_INCHES).default(6)
+    .describe(`Label height in inches (at most ${MAX_INCHES})`),
 };
+const dpiSchema = (fallback, what) => z.number().int()
+  .refine((v) => DPI_VALUES.includes(v), "dpi must be 152, 203, 300 or 600")
+  .default(fallback)
+  .describe(`${what} resolution in dpi (152, 203, 300 or 600)`);
 
 server.tool(
   "zpl_preview",
@@ -43,7 +51,7 @@ server.tool(
   {
     zpl: z.string().min(1).describe("Raw ZPL code (^XA ... ^XZ)"),
     ...sizeSchema,
-    index: z.number().int().min(0).default(0)
+    index: z.number().int().min(0).max(MAX_INDEX).default(0)
       .describe("Which label to render when the stream contains several"),
   },
   (args) => zplPreview(context, args),
@@ -143,10 +151,8 @@ server.tool(
     "Warnings block precedes the output instead of silently passing.",
   {
     zpl: z.string().min(1).describe("Raw ZPL code to convert"),
-    source: z.number().int().default(203)
-      .describe("Source resolution in dpi (152, 203, 300 or 600)"),
-    target: z.number().int().default(300)
-      .describe("Target resolution in dpi (152, 203, 300 or 600)"),
+    source: dpiSchema(203, "Source"),
+    target: dpiSchema(300, "Target"),
   },
   (args) => convertDpi(context, args),
 );

@@ -4,6 +4,18 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.4.1] - 2026-09-28
+
+### Security
+- Numeric tool inputs are checked before any request: `dpmm` must be 6, 8,
+  12 or 24; `width_in` and `height_in` finite, above 0 and at most 15;
+  `index` an integer from 0 to 10000; `source` and `target` 152, 203, 300
+  or 600. `1e999` in JSON parses to Infinity, and such values used to
+  reach the request path and query string.
+- Requests no longer follow redirects. fetch removes only `Authorization`
+  when a redirect changes host; the `X-API-Key` header would have been
+  carried along. A redirect is reported as an error with its status.
+
 ## [0.4.0] - 2026-09-16
 
 ### Added

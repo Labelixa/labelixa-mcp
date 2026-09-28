@@ -51,16 +51,63 @@ const errorResult = (text) => ({ isError: true,
 
 export function createContext({ apiKey, baseUrl = DEFAULT_BASE_URL,
                                 fetch: fetchImpl } = {}) {
+  const raw = fetchImpl ?? globalThis.fetch;
   return {
     baseUrl: baseUrl.replace(/\/+$/, ""),
-    fetch: fetchImpl ?? globalThis.fetch,
+    // Redirects are not followed: fetch drops only `Authorization` when a
+    // redirect changes host, so the X-API-Key header would be carried to
+    // wherever a 3xx points. The API never redirects; a 3xx is reported as
+    // an error with its status.
+    fetch: (url, init = {}) => raw(url, { ...init, redirect: "manual" }),
     headers: headers(apiKey),
   };
+}
+
+// ------------------------------------------------------ numeric inputs --
+// JSON has no Infinity or NaN literal, but `1e999` parses to Infinity, and
+// a client may send any number at all. Numbers end up in the request path
+// and query string, so each one is checked here, before any request:
+// finite, integer where the API wants an integer, and inside the range the
+// API accepts. The zod schemas in server.mjs say the same; this layer holds
+// even when a caller skips them.
+
+/** Densities the API renders (dots per mm). */
+export const DPMM_VALUES = [6, 8, 12, 24];
+/** Resolutions the DPI converter accepts. */
+export const DPI_VALUES = [152, 203, 300, 600];
+/** Largest label side the API renders, in inches. */
+export const MAX_INCHES = 15;
+/** Upper bound for the label index in a multi-label stream. */
+export const MAX_INDEX = 10000;
+
+/** Returns an error sentence, or null when every given value is valid. */
+export function checkNumbers({ dpmm, width_in, height_in, index, source, target }) {
+  const bad = (name, v, rule) => `Invalid ${name}: ${String(v)} (${rule}).`;
+  if (dpmm !== undefined && !DPMM_VALUES.includes(dpmm)) {
+    return bad("dpmm", dpmm, `one of ${DPMM_VALUES.join(", ")}`);
+  }
+  for (const [name, v] of [["width_in", width_in], ["height_in", height_in]]) {
+    if (v !== undefined && !(typeof v === "number" && Number.isFinite(v)
+                            && v > 0 && v <= MAX_INCHES)) {
+      return bad(name, v, `a finite number above 0 and at most ${MAX_INCHES}`);
+    }
+  }
+  if (index !== undefined && !(Number.isInteger(index) && index >= 0 && index <= MAX_INDEX)) {
+    return bad("index", index, `an integer from 0 to ${MAX_INDEX}`);
+  }
+  for (const [name, v] of [["source", source], ["target", target]]) {
+    if (v !== undefined && !DPI_VALUES.includes(v)) {
+      return bad(name, v, `one of ${DPI_VALUES.join(", ")}`);
+    }
+  }
+  return null;
 }
 
 /** Renders ZPL to PNG; returns MCP image content. */
 export async function zplPreview(ctx, { zpl, dpmm = 8, width_in = 4,
                                         height_in = 6, index = 0 }) {
+  const invalid = checkNumbers({ dpmm, width_in, height_in, index });
+  if (invalid) return errorResult(invalid);
   const path = `/v1/printers/${dpmm}dpmm/labels/` +
     `${g(width_in)}x${g(height_in)}/${index}`;
   const res = await ctx.fetch(ctx.baseUrl + path, {
@@ -80,6 +127,8 @@ export async function zplValidate(ctx, { zpl, dpmm = 8, width_in = 4,
   // The endpoint reads the label size from the `w`/`h` query parameters;
   // unknown parameters are ignored silently by the server, so any other
   // spelling would run every check against the 4x6 default.
+  const invalid = checkNumbers({ dpmm, width_in, height_in });
+  if (invalid) return errorResult(invalid);
   const q = `?dpmm=${dpmm}&w=${g(width_in)}&h=${g(height_in)}`;
   const res = await ctx.fetch(ctx.baseUrl + "/v1/diagnostics" + q, {
     method: "POST",
@@ -136,6 +185,8 @@ export const checkCompatibility = (ctx, { zpl, model }) =>
  * X-Warnings and the warning is placed BEFORE the output as a separate
  * text block instead of being dropped silently. */
 export async function convertDpi(ctx, { zpl, source = 203, target = 300 }) {
+  const invalid = checkNumbers({ source, target });
+  if (invalid) return errorResult(invalid);
   const res = await ctx.fetch(
     ctx.baseUrl + `/v1/dpi/convert?source=${source}&target=${target}`, {
       method: "POST",
@@ -156,6 +207,8 @@ export async function convertDpi(ctx, { zpl, source = 203, target = 300 }) {
  * honesty contract is passed through. */
 export const explainZpl = (ctx, { zpl, dpmm = 8, width_in = 4,
                                   height_in = 6, model = "" }) => {
+  const invalid = checkNumbers({ dpmm, width_in, height_in });
+  if (invalid) return Promise.resolve(errorResult(invalid));
   const q = `?dpmm=${dpmm}&w=${g(width_in)}&h=${g(height_in)}` +
     (model ? `&model=${encodeURIComponent(model)}` : "");
   return postTextGetJson(ctx, "/v1/diagnostics/full" + q, zpl);
