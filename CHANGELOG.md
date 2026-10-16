@@ -4,6 +4,22 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.4.2] - 2026-10-15
+
+### Changed
+- `zpl_validate` and `explain_zpl` descriptions now state what each one is
+  for: `zpl_validate` is the fast pass/fail lint with machine-readable
+  diagnostics to run while generating or editing ZPL; `explain_zpl` is the
+  human-readable, scored report for reviewing a finished label. The two
+  descriptions used to overlap enough that assistants picked the wrong
+  tool (seen in a public tool-directory review). Inputs and outputs are
+  unchanged.
+
+### Fixed
+- Trailing slashes are stripped from the configured base URL with a loop
+  instead of the `/\/+$/` regular expression, which had polynomial
+  backtracking on adversarial input (CodeQL `js/polynomial-redos`).
+
 ## [0.4.1] - 2026-09-28
 
 ### Security

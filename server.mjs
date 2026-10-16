@@ -59,9 +59,12 @@ server.tool(
 
 server.tool(
   "zpl_validate",
-  "Lint/validate ZPL and return the structured diagnostics report " +
-    "(unknown commands, parameter range errors, layout overflow, etc.) " +
-    "as JSON. Pass the real label size — checks depend on it.",
+  "Pass/fail lint for ZPL: machine-readable diagnostics with " +
+    "line/column, code and severity (unknown commands, parameter range " +
+    "errors, layout overflow). Fast; run it before zpl_preview whenever " +
+    "you generate or edit ZPL. For a human-readable report with a score " +
+    "use explain_zpl instead. Pass the real label size — checks depend " +
+    "on it.",
   { zpl: z.string().min(1).describe("Raw ZPL code"), ...sizeSchema },
   (args) => zplValidate(context, args),
 );
@@ -159,9 +162,11 @@ server.tool(
 
 server.tool(
   "explain_zpl",
-  "Full sectioned health report for a ZPL label (syntax, size/DPI, " +
-    "orientation, barcodes, fonts, memory) with an honest score: only " +
-    "assessable sections count, the rest say 'not assessed'. Pass the " +
+  "Human-readable health REPORT for a finished ZPL label with a 0-100 " +
+    "score, sectioned (syntax, size/DPI, orientation, barcodes, fonts, " +
+    "memory): only assessable sections count, the rest say 'not " +
+    "assessed'. Use it to review or explain a label to a person; for a " +
+    "quick pass/fail check while editing use zpl_validate. Pass the " +
     "real label size — findings depend on it.",
   {
     zpl: z.string().min(1).describe("Raw ZPL code"),

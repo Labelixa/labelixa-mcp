@@ -20,6 +20,15 @@
 import { createRequire } from "node:module";
 
 const DEFAULT_BASE_URL = "https://api.labelixa.com";
+
+// Trailing slashes are stripped with a loop, not with /\/+$/: that regex
+// backtracks polynomially on a long run of slashes (CodeQL
+// js/polynomial-redos) and the base URL is caller-supplied configuration.
+function stripTrailingSlashes(value) {
+  let out = String(value);
+  while (out.endsWith("/")) out = out.slice(0, -1);
+  return out;
+}
 // The package version is read from package.json so the User-Agent, the
 // MCP serverInfo and the npm metadata always carry the same number.
 export const VERSION = createRequire(import.meta.url)("./package.json").version;
@@ -53,7 +62,7 @@ export function createContext({ apiKey, baseUrl = DEFAULT_BASE_URL,
                                 fetch: fetchImpl } = {}) {
   const raw = fetchImpl ?? globalThis.fetch;
   return {
-    baseUrl: baseUrl.replace(/\/+$/, ""),
+    baseUrl: stripTrailingSlashes(baseUrl),
     // Redirects are not followed: fetch drops only `Authorization` when a
     // redirect changes host, so the X-API-Key header would be carried to
     // wherever a 3xx points. The API never redirects; a 3xx is reported as
