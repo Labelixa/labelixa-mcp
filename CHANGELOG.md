@@ -4,6 +4,27 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-10-20
+
+### Changed
+- JSON tool results use English field names and English code values.
+  The Labelixa API names some fields in Turkish (`ozet`, `mesaj`,
+  `risk.seviye`, a report section's `durum`) and sends some code words
+  in Turkish (`dusuk`, `degerlendirilmedi`); they are now renamed before
+  the result reaches the assistant: `summary`, `message`, `risk.level`,
+  `status`, `low`, `not_evaluated`, and so on. Affects `zpl_validate`,
+  `epl_validate`, `tspl_validate`, `cpcl_validate`, `language_detect`,
+  `zpl_compatibility` and `explain_zpl`. The words are the same ones the
+  hosted server (https://api.labelixa.com/mcp) uses. Free text, rule
+  codes and unknown fields pass through unchanged. If you parse these
+  results yourself, update the field names.
+- `zpl_command_help` returns the same field names as the hosted server:
+  `command`, `name`, `syntax`, `example_fragment`, `rendered_by_preview`,
+  `parameters` (plus `category` and `description`).
+- Error results carry the server's sentence only instead of the raw JSON
+  error body. Extra fields of an error (for example the list of valid
+  models) follow the sentence with English names.
+
 ## [0.4.2] - 2026-10-15
 
 ### Changed

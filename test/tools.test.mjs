@@ -96,7 +96,8 @@ test("language_detect POSTs plain text to the right endpoint and returns JSON as
     assert.match(calls[0].url, /\/v1\/language-detect$/);
     assert.equal(calls[0].options.method, "POST");
     assert.equal(calls[0].options.body, "SIZE 4,6\nPRINT 1");
-    assert.equal(r.content[0].text, '{"dil":"tspl","guven":"high"}');
+    // The API's wire names reach the assistant in English.
+    assert.equal(r.content[0].text, '{"language":"tspl","confidence":"high"}');
   });
 
 test("language validators hit their own endpoints (epl/tspl/cpcl)", async () => {
@@ -130,6 +131,8 @@ test("unknown model 404 is returned as an ERROR with the server text (nothing in
     const r = await checkCompatibility(ctx, { zpl: "^XA^XZ", model: "none" });
     assert.equal(r.isError, true);
     assert.match(r.content[0].text, /Model not in database/);
+    // Only the server's sentence: no raw JSON error body.
+    assert.doesNotMatch(r.content[0].text, /[{}]/);
   });
 
 // ------------------------------------------------------------ 0.3.0 tools --
@@ -172,7 +175,7 @@ test("explain_zpl sends the size as w/h and encodes the model",
   });
 
 test("zpl_command_help filters the catalog; a non-rendered command such as ^PO " +
-  "is returned HONESTLY with destekleniyor=false", async () => {
+  "is returned HONESTLY with rendered_by_preview=false", async () => {
     // `komutlar`, `kod`, `ad`, `destekleniyor` are the API's response fields.
     const catalog = JSON.stringify({ komutlar: [
       { kod: "PO", ad: "Print Orientation", destekleniyor: false },
@@ -184,15 +187,18 @@ test("zpl_command_help filters the catalog; a non-rendered command such as ^PO "
     const r = await commandHelp(ctx, { command: "^PO" });
     assert.match(calls[0].url, /\/v1\/commands$/);
     const entry = JSON.parse(r.content[0].text);
-    assert.equal(entry.kod, "PO");
-    assert.equal(entry.destekleniyor, false);
+    // Same field names as the hosted server's zpl_command_help.
+    assert.equal(entry.command, "PO");
+    assert.equal(entry.name, "Print Orientation");
+    assert.equal(entry.rendered_by_preview, false);
+    assert.equal(entry.kod, undefined);
     // The ^A0 font family maps to the "A" entry; long spellings reduce to two letters (BCN -> BC).
     const a = JSON.parse((await commandHelp(ctx, { command: "^A0" }))
       .content[0].text);
-    assert.equal(a.kod, "A");
+    assert.equal(a.command, "A");
     const bc = JSON.parse((await commandHelp(ctx, { command: "BCN" }))
       .content[0].text);
-    assert.equal(bc.kod, "BC");
+    assert.equal(bc.command, "BC");
   });
 
 test("zpl_command_help returns an error for an unknown command, never invents an entry",
@@ -270,4 +276,98 @@ test("requests never follow redirects", async () => {
   await barcodeGenerate(ctx, { type: "code128", data: "1" });
   await languageDetect(ctx, { code: "^XA^XZ" });
   for (const c of calls) assert.equal(c.options.redirect, "manual", c.url);
+});
+
+// ------------------------------------------------- English output (0.5.0) --
+// The API's Turkish wire names and code words are renamed before the
+// result reaches the assistant (contract.js); the HTTP API keeps them.
+
+test("compatibility result: English field names and code values", async () => {
+  const wire = {
+    model: { uretici: "Zebra", model: "ZD421", kategori: "masaustu", dpi: [203] },
+    dil_postur: { tur: "emulasyon", evidence: "VENDOR_EMULATION_DOCUMENTATION",
+                  kaynak_url: "https://example.com/a.pdf", dogrulama: "2026-09-01",
+                  not: "TSPL-EZ automatic emulation" },
+    risk: { seviye: "orta", gerekceler: ["emulasyon", "boyut_bulgusu"] },
+    boyut_kurali_var: true,
+    boyut_bulgulari: [],
+    onizleme_kapsami: { destekli: ["FO"], kismi: [], desteksiz: [],
+                        yok_sayilan: [], bilinmiyor: [] },
+    sinir: "risk_analizi",
+  };
+  const ctx = createContext({ fetch: fakeFetch([], { text: JSON.stringify(wire) }) });
+  const out = JSON.parse((await checkCompatibility(ctx, { zpl: "^XA^XZ", model: "x" }))
+    .content[0].text);
+  assert.deepEqual(out.risk, { level: "medium", reasons: ["emulation", "size_finding"] });
+  assert.equal(out.model.category, "desktop");
+  assert.equal(out.model.manufacturer, "Zebra");
+  assert.equal(out.language_support.type, "emulation");
+  assert.equal(out.language_support.note, "TSPL-EZ automatic emulation");
+  assert.equal(out.limitation, "risk_analysis");
+  assert.deepEqual(out.preview_coverage.supported, ["FO"]);
+  assert.equal(out.has_size_rule, true);
+});
+
+test("explain report: English section names, statuses and keys", async () => {
+  const wire = {
+    puan: 100,
+    puan_formulu: "100 - 15*error - 5*warning - 5*bolum_uyarisi "
+      + "(taban 0; yalniz degerlendirilen bolumler)",
+    degerlendirilen: ["sozdizimi"],
+    degerlendirilmeyen: ["barkod", "model_uyum"],
+    bolumler: {
+      sozdizimi: { durum: "temiz", bulgular: [], uyarilar: [],
+                   ozet: { komut_adedi: 4, etiket_adedi: 1 } },
+      barkod: { durum: "degerlendirilmedi", bulgular: [], uyarilar: [],
+                sebep: "No barcode", ozet: { adet: 0, komutlar: [] } },
+      boyut_dpi: { durum: "bulgulu", bulgular: [], uyarilar: ["w"],
+                   ozet: { boyut_kaynagi: "alanlardan", en_dots: 812 } },
+    },
+    notlar: [],
+  };
+  const ctx = createContext({ fetch: fakeFetch([], { text: JSON.stringify(wire) }) });
+  const r = await explainZpl(ctx, { zpl: "^XA^XZ" });
+  const out = JSON.parse(r.content[0].text);
+  assert.equal(out.score, 100);
+  assert.deepEqual(out.assessed, ["syntax"]);
+  assert.deepEqual(out.not_assessed, ["barcode", "model_compatibility"]);
+  assert.equal(out.sections.syntax.status, "clean");
+  assert.equal(out.sections.barcode.status, "not_evaluated");
+  assert.equal(out.sections.size_dpi.status, "findings");
+  assert.equal(out.sections.size_dpi.summary.size_source, "from_fields");
+  assert.equal(out.sections.size_dpi.summary.width_dots, 812);
+  assert.equal(out.sections.syntax.summary.command_count, 4);
+  assert.doesNotMatch(out.score_formula, /taban|bolum/);
+  for (const wireName of ["puan", "bolumler", "durum", "ozet", "temiz", "sozdizimi"]) {
+    assert.doesNotMatch(r.content[0].text, new RegExp(`"${wireName}"`), wireName);
+  }
+});
+
+test("validate result: English summary and message; unknown keys and free text untouched",
+  async () => {
+    const wire = { diagnostics: [{ code: "ZPL0002", severity: "error", line: 1, col: 1,
+                                   mesaj: "Missing ^XZ", args: { komut: "XZ" },
+                                   kendi_alani: "x" }],
+                   ozet: { toplam: 1, error: 1, warning: 0, info: 0 } };
+    const ctx = createContext({ fetch: fakeFetch([], { text: JSON.stringify(wire) }) });
+    const out = JSON.parse((await zplValidate(ctx, { zpl: "^XA" })).content[0].text);
+    assert.deepEqual(out.summary, { total: 1, error: 1, warning: 0, info: 0 });
+    assert.equal(out.diagnostics[0].message, "Missing ^XZ");
+    assert.equal(out.diagnostics[0].code, "ZPL0002");
+    assert.deepEqual(out.diagnostics[0].args, { command: "XZ" });
+    assert.equal(out.diagnostics[0].kendi_alani, "x");
+  });
+
+test("a body that is not JSON passes through unchanged", async () => {
+  const ctx = createContext({ fetch: fakeFetch([], { text: "not json" }) });
+  const r = await languageDetect(ctx, { code: "x" });
+  assert.equal(r.content[0].text, "not json");
+});
+
+test("error with extra fields: sentence first, extra fields in English", async () => {
+  const ctx = createContext({ fetch: fakeFetch([], {
+    status: 400, text: JSON.stringify({ hata: "Unknown printer model", modeller: ["zd421"] }) }) });
+  const r = await explainZpl(ctx, { zpl: "^XA^XZ", model: "nope" });
+  assert.equal(r.isError, true);
+  assert.match(r.content[0].text, /Unknown printer model \{"models":\["zd421"\]\}/);
 });

@@ -5,9 +5,13 @@
  * - THIN wrapper: every tool maps 1:1 to a documented REST endpoint
  *   (https://labelixa.com/docs/api); no client-side magic, no silent
  *   retries that would hide quota signals.
- * - Errors carry the server's OWN text; 402/429 are flagged separately so
- *   the assistant reads the retry delay from the server instead of
- *   inventing one.
+ * - Errors carry the server's OWN sentence; 402/429 are flagged
+ *   separately so the assistant reads the retry delay from the server
+ *   instead of inventing one.
+ * - JSON answers reach the assistant with ENGLISH field names and code
+ *   values (`summary`, `risk.level: "low"`); the API's own wire names are
+ *   renamed once, in `contract.js`, with the same words as the hosted
+ *   server.
  * - This file does NOT import the MCP SDK: every tool is tested without a
  *   network using a fake fetch (node --test); the server wiring lives in
  *   server.mjs.
@@ -18,6 +22,9 @@
  */
 
 import { createRequire } from "node:module";
+
+import { COMMAND_CODE, COMMAND_LIST, englishFields, englishJson,
+         errorText } from "./contract.js";
 
 const DEFAULT_BASE_URL = "https://api.labelixa.com";
 
@@ -44,7 +51,7 @@ function headers(apiKey) {
 
 /** Turns an error body into MCP text; quota errors are separate and actionable. */
 async function errorMessage(response) {
-  const body = (await response.text()).slice(0, 500);
+  const body = errorText(await response.text()).slice(0, 500);
   if (response.status === 402 || response.status === 429) {
     const seconds = response.headers.get("Retry-After") ?? "60";
     return `Quota/rate limit (HTTP ${response.status}): ${body} — retry ` +
@@ -145,12 +152,13 @@ export async function zplValidate(ctx, { zpl, dpmm = 8, width_in = 4,
     body: zpl,
   });
   if (res.status !== 200) return errorResult(await errorMessage(res));
-  return { content: [{ type: "text", text: await res.text() }] };
+  return { content: [{ type: "text", text: englishJson(await res.text()) }] };
 }
 
 /** Shared path for endpoints that take a plain-text body and return JSON.
  * Several tools share this contract (stateless, JSON response, errors with
- * the server's text); one helper instead of one copy per tool. */
+ * the server's text); one helper instead of one copy per tool. The JSON
+ * is returned with English field names (contract.js). */
 async function postTextGetJson(ctx, path, body) {
   const res = await ctx.fetch(ctx.baseUrl + path, {
     method: "POST",
@@ -158,7 +166,7 @@ async function postTextGetJson(ctx, path, body) {
     body,
   });
   if (res.status !== 200) return errorResult(await errorMessage(res));
-  return { content: [{ type: "text", text: await res.text() }] };
+  return { content: [{ type: "text", text: englishJson(await res.text()) }] };
 }
 
 /** Detects the printer language (ZPL/EPL/TSPL/CPCL) — heuristic. The
@@ -240,22 +248,26 @@ export async function commandHelp(ctx, { command, locale }) {
   const res = await ctx.fetch(ctx.baseUrl + "/v1/commands" + q,
                               { method: "GET", headers: ctx.headers });
   if (res.status !== 200) return errorResult(await errorMessage(res));
-  // `komutlar` / `kod` are the field names of the API response
-  // (https://labelixa.com/docs/api).
-  const { komutlar: catalog } = JSON.parse(await res.text());
+  // The catalog's wire field names live in contract.js.
+  const catalog = JSON.parse(await res.text())[COMMAND_LIST];
   const code = String(command).trim().replace(/^[\^~]+/, "").toUpperCase();
+  const byCode = (c) => catalog.find((k) => k[COMMAND_CODE] === c);
   // The ^A0/^AD font family is catalogued as "A"; other long spellings are
   // reduced to two letters (same order as the server's normalisation).
-  const entry = catalog.find((k) => k.kod === code)
-    ?? ((code.startsWith("A") && code !== "A@")
-        ? catalog.find((k) => k.kod === "A") : undefined)
-    ?? (code.length > 2
-        ? catalog.find((k) => k.kod === code.slice(0, 2)) : undefined);
+  const entry = byCode(code)
+    ?? ((code.startsWith("A") && code !== "A@") ? byCode("A") : undefined)
+    ?? (code.length > 2 ? byCode(code.slice(0, 2)) : undefined);
   if (!entry) {
     return errorResult(`Unknown command: ${command} — not in the catalog ` +
       `(possible typo; use zpl_validate to check the code).`);
   }
-  return { content: [{ type: "text", text: JSON.stringify(entry, null, 1) }] };
+  // Same field names as the hosted server's zpl_command_help: `command`,
+  // `syntax`, `example_fragment`, `rendered_by_preview`, `parameters`.
+  const { code: commandCode, format, example, ...rest } = englishFields(entry);
+  const out = { command: commandCode, ...rest };
+  if (format !== undefined) out.syntax = format;
+  if (example !== undefined) out.example_fragment = example;
+  return { content: [{ type: "text", text: JSON.stringify(out, null, 1) }] };
 }
 
 /** Generates a barcode; svg -> text, png -> image content.
