@@ -112,7 +112,7 @@ server only.
   Smithery routes calls through its own gateway; the canonical endpoint
   is `https://api.labelixa.com/mcp`.
 
-[![smithery badge](https://smithery.ai/badge/labelixa/zpl)](https://smithery.ai/servers/labelixa/zpl)
+[![LightNow capabilities](https://lightnow.ai/badge/com.labelixa/zpl)](https://lightnow.ai/servers/com.labelixa/zpl)
 
 ## Honesty notes
 
