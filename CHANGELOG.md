@@ -4,6 +4,14 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.1] - 2026-10-23
+
+### Changed
+- README: the list of remote-only tools now names
+  `printer_language_to_zpl` (SATO SBPL, Datamax DPL and Intermec IPL to
+  ZPL) on the hosted server https://api.labelixa.com/mcp. This package's
+  own tools and code are unchanged.
+
 ## [0.5.0] - 2026-10-20
 
 ### Changed

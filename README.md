@@ -101,8 +101,9 @@ and DPI values are 152, 203, 300 or 600.
 | `explain_zpl` | Full sectioned health report (syntax, size/DPI, orientation, barcodes, fonts, memory) with an honest score — sections it cannot assess say "not assessed" instead of counting. |
 
 EPL, TSPL and CPCL previews, label templates, bulk generation,
-image-to-ZPL conversion and barcode reading from photos are on the remote
-server only.
+image-to-ZPL conversion, SBPL / DPL / IPL to ZPL conversion
+(`printer_language_to_zpl`) and barcode reading from photos are on the
+remote server only.
 
 ## Directory listings
 
