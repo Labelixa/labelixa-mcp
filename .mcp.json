@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "labelixa": {
+      "url": "https://api.labelixa.com/mcp"
+    }
+  }
+}
