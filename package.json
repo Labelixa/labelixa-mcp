@@ -1,6 +1,6 @@
 {
   "name": "labelixa-mcp",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "mcpName": "com.labelixa/zpl",
   "description": "Thermal label MCP server (local stdio): render, validate, debug and convert ZPL, EPL, TSPL and CPCL labels via the Labelixa API. Full tool set on the hosted server https://api.labelixa.com/mcp.",
   "type": "module",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "zod": "^3.23.0"
+    "zod": "^4.6.7"
   },
   "keywords": [
     "zpl",

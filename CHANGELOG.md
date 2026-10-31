@@ -4,6 +4,19 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.2] - 2026-10-31
+
+### Changed
+- `zpl_command_help`: commands that are valid with either prefix
+  (`^CC`/`~CC`, `^CT`/`~CT`) now carry a `prefixes` list (`["^", "~"]`);
+  the `syntax` string keeps the primary spelling.
+
+### Security
+- Upgrade `zod` from 3.25.76 to 4.6.7 (GHSA-mrhx-c7xc-m3w5: memory
+  exhaustion while validating oversized constrained collections) and
+  refresh the lockfile (`body-parser`, `fast-uri`, `ip-address`). Tool
+  names, inputs and outputs are unchanged.
+
 ## [0.5.1] - 2026-10-23
 
 ### Changed

@@ -175,6 +175,7 @@ export const FIELD_NAMES = Object.freeze({
   aralik: "range",
   secenekler: "options",
   onizlemede_yok: "not_in_preview",
+  onekler: "prefixes",
 });
 
 /** Every state a bulk job can be in. */
