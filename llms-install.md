@@ -5,8 +5,11 @@ install: add the server URL to your MCP client configuration.
 
 ## Option 1 (recommended): remote server
 
-Add this entry to the `mcpServers` object of your MCP settings file
-(in Cline: `cline_mcp_settings.json`):
+Add this entry to the `mcpServers` object of your MCP settings file.
+In Cline it is `cline_mcp_settings.json`: open it from the MCP Servers
+panel ("Edit Configuration"); on macOS and Linux it is usually
+`~/.cline/data/settings/cline_mcp_settings.json`. There is no need to
+search the disk for it.
 
 ```json
 {
