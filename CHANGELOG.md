@@ -4,6 +4,15 @@ All notable changes to the `labelixa-mcp` npm package are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.5.3] - 2026-11-24
+
+### Changed
+- README: added the Glama listing badge at the top.
+- README: removed the link to the Smithery listing. That listing no
+  longer exists, so the link led to a "not found" page. The official MCP
+  Registry entry (`com.labelixa/zpl`) and the remote endpoint are
+  unchanged. Package code, tool names, inputs and outputs are unchanged.
+
 ## [0.5.2] - 2026-10-31
 
 ### Changed

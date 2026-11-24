@@ -111,11 +111,7 @@ remote server only.
 
 - Official [MCP Registry](https://registry.modelcontextprotocol.io):
   `com.labelixa/zpl` (remote server + this npm package).
-- [Smithery](https://smithery.ai/servers/labelixa/zpl): `labelixa/zpl`.
-  Smithery routes calls through its own gateway; the canonical endpoint
-  is `https://api.labelixa.com/mcp`.
-
-[![smithery badge](https://smithery.ai/badge/labelixa/zpl)](https://smithery.ai/servers/labelixa/zpl)
+  The canonical endpoint is `https://api.labelixa.com/mcp`.
 
 ## Honesty notes
 
