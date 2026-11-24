@@ -1,5 +1,7 @@
 # labelixa-mcp
 
+[![Labelixa/labelixa-mcp MCP server](https://glama.ai/mcp/servers/Labelixa/labelixa-mcp/badges/score.svg)](https://glama.ai/mcp/servers/Labelixa/labelixa-mcp)
+
 [Labelixa](https://labelixa.com) is an MCP (Model Context Protocol) server
 and API platform for thermal label development. It gives AI assistants and
 developer tools the ability to render, validate, debug, inspect and
